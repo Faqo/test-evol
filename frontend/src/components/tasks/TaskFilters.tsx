@@ -1,14 +1,25 @@
+// src/components/tasks/TaskFilters.tsx - CON PROPS
 import React from 'react';
-import { Filter, X, Calendar } from 'lucide-react';
-import { useTasks } from '../../hooks/useTasks';
+import { Filter, X, Calendar, ArrowUpDown } from 'lucide-react';
 import { Button } from '../common/Button';
 
-export const TaskFilters: React.FC = () => {
-  const { filters, updateFilters, resetFilters, loadTasks } = useTasks();
+// Definir tipos para las props
+interface TaskFiltersProps {
+  tasksHook: ReturnType<typeof import('../../hooks/useTasks').useTasks>;
+}
+
+export const TaskFilters: React.FC<TaskFiltersProps> = ({ tasksHook }) => {
+  const { 
+    filters, 
+    sortOrder,
+    updateFilters, 
+    resetFilters, 
+    updateSortOrder,
+    loadTasks 
+  } = tasksHook; // Usar el hook pasado como prop
 
   const handleCompletedFilter = (completed: boolean | undefined) => {
     updateFilters({ ...filters, completed });
-    // Cargar tareas manualmente después de cambiar filtros
     setTimeout(() => loadTasks(), 100);
   };
 
@@ -17,7 +28,6 @@ export const TaskFilters: React.FC = () => {
       ...filters,
       dateFrom: dateFrom ? new Date(dateFrom) : undefined
     });
-    // Cargar tareas manualmente después de cambiar filtros
     setTimeout(() => loadTasks(), 100);
   };
 
@@ -26,13 +36,6 @@ export const TaskFilters: React.FC = () => {
       ...filters,
       dateTo: dateTo ? new Date(dateTo) : undefined
     });
-    // Cargar tareas manualmente después de cambiar filtros
-    setTimeout(() => loadTasks(), 100);
-  };
-
-  const handleResetFilters = () => {
-    resetFilters();
-    // Cargar tareas manualmente después de limpiar filtros
     setTimeout(() => loadTasks(), 100);
   };
 
@@ -41,7 +44,7 @@ export const TaskFilters: React.FC = () => {
     return date.toISOString().slice(0, 16);
   };
 
-  const hasActiveFilters = filters.completed !== undefined || filters.dateFrom || filters.dateTo;
+  const hasActiveFilters = filters.completed !== undefined || filters.dateFrom || filters.dateTo || sortOrder !== 'desc';
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
@@ -54,7 +57,7 @@ export const TaskFilters: React.FC = () => {
           <Button
             variant="ghost"
             size="sm"
-            onClick={handleResetFilters}
+            onClick={resetFilters}
           >
             <X className="w-4 h-4 mr-1" />
             Clear All
@@ -62,7 +65,7 @@ export const TaskFilters: React.FC = () => {
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {/* Status Filter */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -119,6 +122,24 @@ export const TaskFilters: React.FC = () => {
             className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
+
+        {/* Sort Order Filter */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            <ArrowUpDown className="w-4 h-4 inline mr-1" />
+            Sort Order
+          </label>
+          <select
+            value={sortOrder}
+            onChange={(e) => {
+              updateSortOrder(e.target.value as 'asc' | 'desc');
+            }}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+          >
+            <option value="desc">Newest First</option>
+            <option value="asc">Oldest First</option>
+          </select>
+        </div>
       </div>
 
       {/* Filter Summary */}
@@ -139,6 +160,11 @@ export const TaskFilters: React.FC = () => {
             {filters.dateTo && (
               <span className="ml-1 px-2 py-1 bg-purple-100 text-purple-800 rounded text-xs">
                 To: {filters.dateTo.toLocaleDateString()}
+              </span>
+            )}
+            {sortOrder !== 'desc' && (
+              <span className="ml-1 px-2 py-1 bg-orange-100 text-orange-800 rounded text-xs">
+                Order: Oldest First
               </span>
             )}
           </p>

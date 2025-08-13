@@ -105,6 +105,7 @@ npm run build
 
 # Tests
 npm run test              # Tests unitarios
+npm run test:e2e          # Tests de integración
 npm run test:cov          # Cobertura de tests
 
 # Linting
