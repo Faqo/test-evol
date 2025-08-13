@@ -4,7 +4,7 @@ import {
   IsOptional,
   IsArray,
   IsDateString,
-  IsBoolean
+  IsBoolean,
 } from 'class-validator';
 
 export class CreateTaskDto {

@@ -1,11 +1,16 @@
-// src/tasks/task.entity.ts
 import {
-  Table, Column, Model, DataType,
-  PrimaryKey, AutoIncrement, CreatedAt, UpdatedAt
+  Table,
+  Column,
+  Model,
+  DataType,
+  PrimaryKey,
+  AutoIncrement,
+  CreatedAt,
+  UpdatedAt,
 } from 'sequelize-typescript';
 
 @Table({
-  tableName: 'tasks'
+  tableName: 'tasks',
 })
 export class Task extends Model {
   @PrimaryKey
@@ -15,31 +20,31 @@ export class Task extends Model {
 
   @Column({
     type: DataType.STRING,
-    allowNull: false
+    allowNull: false,
   })
   declare title: string;
 
   @Column({
     type: DataType.TEXT,
-    allowNull: true
+    allowNull: true,
   })
   declare description: string;
 
   @Column({
     type: DataType.BOOLEAN,
-    defaultValue: false
+    defaultValue: false,
   })
   declare completed: boolean;
 
   @Column({
     type: DataType.ARRAY(DataType.STRING),
-    defaultValue: []
+    defaultValue: [],
   })
   declare tags: string[];
 
   @Column({
     type: DataType.DATE,
-    allowNull: true
+    allowNull: true,
   })
   declare dueDate: Date;
 

@@ -8,6 +8,6 @@ import { Task } from './tasks.entity';
   imports: [SequelizeModule.forFeature([Task])], // Registrar el modelo Task
   controllers: [TasksController],
   providers: [TasksService],
-  exports: [TasksService] // Por si otros módulos lo necesitan
+  exports: [TasksService], // Por si otros módulos lo necesitan
 })
 export class TasksModule {}

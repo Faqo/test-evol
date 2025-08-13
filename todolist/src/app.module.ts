@@ -20,11 +20,11 @@ import { Task } from './tasks/tasks.entity';
       database: process.env.DB_NAME || 'todoapp',
       models: [Task],
       autoLoadModels: true,
-      synchronize: true // Solo para desarrollo
+      synchronize: true, // Solo para desarrollo
     }),
 
     TasksModule,
-    TagsModule
-  ]
+    TagsModule,
+  ],
 })
-export class AppModule { }
+export class AppModule {}

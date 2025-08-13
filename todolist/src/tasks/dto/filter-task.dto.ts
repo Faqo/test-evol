@@ -1,18 +1,15 @@
-import { IsOptional, IsBoolean, IsDate } from 'class-validator';
-import { Transform } from 'class-transformer';
+import { IsOptional, IsBoolean, IsDateString } from 'class-validator';
 
 export class FilterTaskDto {
-    @IsOptional()
-    @IsBoolean()
-    completed?: boolean;
+  @IsOptional()
+  @IsBoolean()
+  completed?: boolean;
 
-    @IsOptional()
-    @Transform(({ value }) => value ? new Date(value) : undefined)
-    @IsDate()
-    dateFrom?: Date;
+  @IsOptional()
+  @IsDateString()
+  dateFrom?: string;
 
-    @IsOptional()
-    @Transform(({ value }) => value ? new Date(value) : undefined)
-    @IsDate()
-    dateTo?: Date;
+  @IsOptional()
+  @IsDateString()
+  dateTo?: string;
 }

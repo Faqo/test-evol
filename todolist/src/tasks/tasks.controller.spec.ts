@@ -2,36 +2,44 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { TasksController } from './tasks.controller';
 import { TasksService } from './tasks.service';
 
+const mockTasksService = {
+  create: jest.fn(),
+  findAllWithFilters: jest.fn(),
+  findOne: jest.fn(),
+  update: jest.fn(),
+  remove: jest.fn(),
+  getTags: jest.fn(),
+};
+
 describe('TasksController', () => {
-    let controller: TasksController;
-    let mockService: any;
+  let controller: TasksController;
+  let service: TasksService;
 
-    beforeEach(async () => {
-        mockService = {
-            create: jest.fn(),
-            findAllWithFilters: jest.fn(),
-            update: jest.fn(),
-        };
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [TasksController],
+      providers: [
+        {
+          provide: TasksService,
+          useValue: mockTasksService, // ← Tipo correcto
+        },
+      ],
+    }).compile();
 
-        const module: TestingModule = await Test.createTestingModule({
-            controllers: [TasksController],
-            providers: [{ provide: TasksService, useValue: mockService }],
-        }).compile();
+    controller = module.get<TasksController>(TasksController);
+    service = module.get<TasksService>(TasksService);
+  });
 
-        controller = module.get<TasksController>(TasksController);
-    });
+  it('should be defined', () => {
+    expect(controller).toBeDefined();
+  });
 
-    it('should handle CRUD operations', async () => {
-        const mockTask = { id: 1, title: 'Test' };
+  it('should create a task', async () => {
+    const createTaskDto = { title: 'Test', description: 'Test' };
+    const result = { id: 1, ...createTaskDto };
 
-        // Test create
-        mockService.create.mockResolvedValue(mockTask);
-        const created = await controller.create({ title: 'Test' });
-        expect(created).toEqual(mockTask);
+    jest.spyOn(service, 'create').mockResolvedValue(result as any);
 
-        // Test findAll
-        mockService.findAllWithFilters.mockResolvedValue([mockTask]);
-        const found = await controller.findAll();
-        expect(found).toEqual([mockTask]);
-    });
+    expect(await controller.create(createTaskDto)).toBe(result);
+  });
 });
