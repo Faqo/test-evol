@@ -5,7 +5,10 @@ import { TasksService } from '../tasks/tasks.service';
 export class TagsController {
   constructor(private readonly tasksService: TasksService) {}
 
-  // Get /api/tags
+  /**
+  * Obtener los tags 
+  * Get /api/tags
+  **/
   @Get()
   async getAllTags(): Promise<string[]> {
     const tags = await this.tasksService.getAllTags();

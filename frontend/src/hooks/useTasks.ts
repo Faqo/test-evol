@@ -1,4 +1,3 @@
-// src/hooks/useTasks.ts - PRODUCTION CLEAN VERSION
 import { useDispatch, useSelector } from 'react-redux';
 import { useCallback, useMemo, useState, useRef } from 'react';
 import type { AppDispatch, RootState } from '../store/store';

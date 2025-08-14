@@ -1,4 +1,3 @@
-// src/components/tasks/TaskItem.tsx - PRODUCTION CLEAN VERSION
 import React, { useState } from 'react';
 import { 
   CheckSquare, 

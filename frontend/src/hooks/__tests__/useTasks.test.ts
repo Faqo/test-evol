@@ -1,4 +1,3 @@
-// src/hooks/__tests__/useTasks.test.ts - BASIC COVERAGE VERSION
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useTasks } from '../useTasks';

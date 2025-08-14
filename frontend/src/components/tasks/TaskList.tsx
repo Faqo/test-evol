@@ -1,4 +1,3 @@
-// src/components/tasks/TaskList.tsx - CON PROPS
 import React from 'react';
 import { CheckSquare } from 'lucide-react';
 import { TaskItem } from './TaskItem';

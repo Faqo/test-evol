@@ -25,10 +25,6 @@ export class TasksController {
 
   /**
    * Crea una nueva tarea
-   * @param {CreateTaskDto} createTaskDto - Datos de la nueva tarea
-   * @returns {Promise<Task>} La tarea creada con ID asignado
-   * @throws {BadRequestException} Si los datos son inválidos
-   * @example
    * POST /api/tasks
    * Body: { "title": "Nueva tarea", "description": "Descripción", etc... }
    */
@@ -41,10 +37,7 @@ export class TasksController {
 
   /**
    * Obtiene todas las tareas
-   * @returns {Promise<Task[]>} Lista de tareas 
-   * @example
    * GET /api/tasks
-   * Body: { "completed": false, "dateFrom": "2024-01-01" }
    */
 
   @Get()
@@ -55,12 +48,7 @@ export class TasksController {
 
   /**
    * Actualiza una nueva tarea
-   * @param {UpdateTaskDto} updateTaskDto - Datos nuevos de la tarea con id requerido
-   * @returns {Promise<Task>} La tarea modificada
-   * @throws {BadRequestException} Si los datos son inválidos
-   * @example
    * PUT /api/tasks/123
-   * Body: { "description": "nueva descripción" }
    */
   @Put(':id')
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
@@ -72,11 +60,7 @@ export class TasksController {
   }
 
   /**
-   * Actualiza una nueva tarea
-   * @param {int} id - Id de la tarea a eliminar
-   * @returns {Promise<Task>} La tarea eliminada
-   * @throws {BadRequestException} Si el id es inválido
-   * @example
+   * Elimina una tarea con id
    * DELETE /api/tasks/123
    */
   @Delete(':id')

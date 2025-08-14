@@ -27,7 +27,6 @@ const createTestStore = (initialState: Partial<TasksState> = {}) => {
   });
 };
 
-// Para componentes que NO incluyen Router (TaskItem, Button, etc.)
 export function renderWithProviders(
   ui: ReactElement,
   options: CustomRenderOptions = {}
@@ -48,7 +47,6 @@ export function renderWithProviders(
   return render(ui, { wrapper: Wrapper, ...renderOptions });
 }
 
-// Para el App component (que YA tiene Router)
 export function renderAppWithProviders(
   ui: ReactElement,
   options: CustomRenderOptions = {}

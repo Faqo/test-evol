@@ -1,4 +1,3 @@
-// src/components/tasks/TaskFilters.tsx - PRODUCTION CLEAN VERSION
 import React, { memo, useCallback } from 'react';
 import { Filter, X, Calendar, ArrowUpDown, BarChart3 } from 'lucide-react';
 import { Button } from '../common/Button';
