@@ -3,8 +3,6 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Task } from './tasks.entity';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
-import { FilterTaskDto } from './dto/filter-task.dto';
-import { Op, WhereOptions } from 'sequelize';
 
 @Injectable()
 export class TasksService {
@@ -24,42 +22,11 @@ export class TasksService {
     return this.taskModel.create(taskData);
   }
 
-  // Obtener todas las tareas (con filtros opcionales)
-  async findAllWithFilters(filterDto: FilterTaskDto = {}): Promise<Task[]> {
-    const whereCondition: WhereOptions = {};
-
-    // Filtro por estado completado
-    if (filterDto.completed !== undefined) {
-      whereCondition.completed = filterDto.completed;
-    }
-
-    // Filtros de fecha - basados en createdAt
-    if (filterDto.dateFrom || filterDto.dateTo) {
-      const createdAtFilter: { [key: symbol]: Date } = {};
-
-      if (filterDto.dateFrom) {
-        createdAtFilter[Op.gte] = new Date(filterDto.dateFrom);
-      }
-
-      if (filterDto.dateTo) {
-        // Incluir todo el día hasta las 23:59:59
-        const endDate = new Date(filterDto.dateTo);
-        endDate.setHours(23, 59, 59, 999);
-        createdAtFilter[Op.lte] = endDate;
-      }
-
-      whereCondition.createdAt = createdAtFilter;
-    }
-
+  // Obtener todas las tareas 
+  async findAll(): Promise<Task[]> {
     return this.taskModel.findAll({
-      where: whereCondition,
       order: [['createdAt', 'DESC']],
     });
-  }
-
-  //por compatibilidad con metodos de Tag
-  async findAll(): Promise<Task[]> {
-    return this.findAllWithFilters({});
   }
 
   // Obtener una tarea por ID

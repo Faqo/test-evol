@@ -1,15 +1,21 @@
+// src/components/tasks/TaskList.tsx - CON PROPS
 import React from 'react';
 import { CheckSquare } from 'lucide-react';
 import { TaskItem } from './TaskItem';
 import { LoadingSpinner } from '../common/LoadingSpinner';
 
-//Definir tipos para las props
+//  Definir tipos para las props
 interface TaskListProps {
   tasksHook: ReturnType<typeof import('../../hooks/useTasks').useTasks>;
 }
 
 export const TaskList: React.FC<TaskListProps> = ({ tasksHook }) => {
-  const { tasks, loading, error, loadTasks } = tasksHook; // Usar el hook pasado como prop
+  const { tasks, loading, error, loadTasks } = tasksHook;
+
+  // Wrapper function para el botón
+  const handleLoadTasks = () => {
+    loadTasks(); 
+  };
 
 
   if (loading) {
@@ -49,7 +55,7 @@ export const TaskList: React.FC<TaskListProps> = ({ tasksHook }) => {
           Create your first task to get started, or adjust your filters to see more results.
         </p>
         <button
-          onClick={loadTasks}
+          onClick={handleLoadTasks}
           className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
         >
           Load Tasks
@@ -60,22 +66,13 @@ export const TaskList: React.FC<TaskListProps> = ({ tasksHook }) => {
 
   return (
     <div className="space-y-4">
+
       {tasks.map((task) => (
         <div key={task.id}>
           <TaskItem task={task} />
         </div>
       ))}
       
-      {/* Task Summary */}
-      <div className="bg-gray-50 rounded-lg p-4 mt-6">
-        <div className="flex justify-between text-sm text-gray-600">
-          <span>Total: {tasks.length} tasks</span>
-          <span>
-            Completed: {tasks.filter(task => task.completed).length} | 
-            Pending: {tasks.filter(task => !task.completed).length}
-          </span>
-        </div>
-      </div>
     </div>
   );
 };

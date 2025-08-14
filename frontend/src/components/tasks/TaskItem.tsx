@@ -1,4 +1,4 @@
-// src/components/tasks/TaskItem.tsx - CON FECHAS VISIBLES
+// src/components/tasks/TaskItem.tsx - PRODUCTION CLEAN VERSION
 import React, { useState } from 'react';
 import { 
   CheckSquare, 
@@ -8,7 +8,10 @@ import {
   Calendar,
   Clock,
   Save,
-  X 
+  X,
+  AlertTriangle,
+  CalendarCheck,
+  CalendarClock
 } from 'lucide-react';
 import { useTasks } from '../../hooks/useTasks';
 import { Button } from '../common/Button';
@@ -24,7 +27,6 @@ export const TaskItem: React.FC<TaskItemProps> = ({ task }) => {
   const [editTitle, setEditTitle] = useState(task.title);
   const [editDescription, setEditDescription] = useState(task.description || '');
 
-  // ✅ Función para formatear fecha de manera clara
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -46,7 +48,6 @@ export const TaskItem: React.FC<TaskItemProps> = ({ task }) => {
     }
   };
 
-  // ✅ Formatear fecha completa para tooltip
   const formatFullDate = (dateString: string) => {
     return new Date(dateString).toLocaleString('en-US', {
       weekday: 'long',
@@ -57,6 +58,51 @@ export const TaskItem: React.FC<TaskItemProps> = ({ task }) => {
       minute: '2-digit',
       second: '2-digit'
     });
+  };
+
+  const formatDueDate = (dueDateString: string) => {
+    const dueDate = new Date(dueDateString);
+    const now = new Date();
+    const diffMs = dueDate.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffDays < 0) {
+      const overdueDays = Math.abs(diffDays);
+      return {
+        text: `Overdue ${overdueDays} day${overdueDays > 1 ? 's' : ''}`,
+        className: 'text-red-600 bg-red-50 border-red-200',
+        icon: AlertTriangle,
+        status: 'overdue'
+      };
+    } else if (diffDays === 0) {
+      return {
+        text: 'Due today',
+        className: 'text-orange-600 bg-orange-50 border-orange-200',
+        icon: CalendarClock,
+        status: 'today'
+      };
+    } else if (diffDays === 1) {
+      return {
+        text: 'Due tomorrow',
+        className: 'text-yellow-600 bg-yellow-50 border-yellow-200',
+        icon: CalendarClock,
+        status: 'tomorrow'
+      };
+    } else if (diffDays <= 7) {
+      return {
+        text: `Due in ${diffDays} days`,
+        className: 'text-blue-600 bg-blue-50 border-blue-200',
+        icon: Calendar,
+        status: 'thisWeek'
+      };
+    } else {
+      return {
+        text: `Due ${dueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`,
+        className: 'text-gray-600 bg-gray-50 border-gray-200',
+        icon: Calendar,
+        status: 'future'
+      };
+    }
   };
 
   const handleToggleComplete = async () => {
@@ -86,6 +132,8 @@ export const TaskItem: React.FC<TaskItemProps> = ({ task }) => {
       await removeTask(task.id);
     }
   };
+
+  const dueDateInfo = task.dueDate ? formatDueDate(task.dueDate) : null;
 
   if (isEditing) {
     return (
@@ -131,11 +179,12 @@ export const TaskItem: React.FC<TaskItemProps> = ({ task }) => {
   }
 
   return (
-    <div className={`bg-white rounded-lg shadow-sm border border-gray-200 p-4 transition-all duration-200 hover:shadow-md ${
-      task.completed ? 'opacity-75' : ''
-    }`}>
+    <div className={`
+      bg-white rounded-lg shadow-sm border transition-all duration-200 hover:shadow-md p-4
+      ${task.completed ? 'opacity-75 border-green-200' : 'border-gray-200'}
+      ${dueDateInfo?.status === 'overdue' && !task.completed ? 'border-red-200 bg-red-50/10' : ''}
+    `}>
       <div className="flex items-start space-x-3">
-        {/* Checkbox */}
         <button
           onClick={handleToggleComplete}
           className={`flex-shrink-0 w-5 h-5 mt-1 transition-colors duration-200 ${
@@ -147,7 +196,6 @@ export const TaskItem: React.FC<TaskItemProps> = ({ task }) => {
           {task.completed ? <CheckSquare /> : <Square />}
         </button>
 
-        {/* Content */}
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between">
             <div className="flex-1">
@@ -169,7 +217,23 @@ export const TaskItem: React.FC<TaskItemProps> = ({ task }) => {
                 </p>
               )}
 
-              {/* ✅ FECHA VISIBLE MEJORADA */}
+              {/* Due Date Badge */}
+              {task.dueDate && dueDateInfo && (
+                <div className={`
+                  mt-2 inline-flex items-center gap-1 px-2 py-1 rounded-md border text-sm font-medium
+                  ${dueDateInfo.className}
+                `}>
+                  <dueDateInfo.icon className="w-4 h-4" />
+                  <span>
+                    {task.completed ? 'Completed' : dueDateInfo.text}
+                  </span>
+                  {task.completed && (
+                    <CalendarCheck className="w-4 h-4 ml-1" />
+                  )}
+                </div>
+              )}
+
+              {/* Metadata */}
               <div className="mt-2 flex items-center space-x-4 text-xs text-gray-500">
                 <div className="flex items-center space-x-1" title={formatFullDate(task.createdAt)}>
                   <Calendar className="w-3 h-3" />
@@ -182,11 +246,6 @@ export const TaskItem: React.FC<TaskItemProps> = ({ task }) => {
                     <span>Updated: {formatDate(task.updatedAt)}</span>
                   </div>
                 )}
-
-                {/* ✅ DEBUG INFO - TEMPORAL */}
-                <div className="text-yellow-600 font-mono">
-                  RAW: {task.createdAt.slice(11, 19)}
-                </div>
               </div>
             </div>
 
@@ -213,21 +272,37 @@ export const TaskItem: React.FC<TaskItemProps> = ({ task }) => {
         </div>
       </div>
 
-      {/* ✅ STATUS BADGE */}
+      {/* Status Badge */}
       <div className="mt-3 flex items-center justify-between">
-        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-          task.completed
-            ? 'bg-green-100 text-green-800'
-            : 'bg-yellow-100 text-yellow-800'
-        }`}>
-          {task.completed ? 'Completed' : 'Pending'}
-        </span>
-        
-        {/* ✅ ID para debugging */}
-        <span className="text-xs text-gray-400 font-mono">
-          ID: {task.id}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+            task.completed
+              ? 'bg-green-100 text-green-800'
+              : 'bg-yellow-100 text-yellow-800'
+          }`}>
+            {task.completed ? 'Completed' : 'Pending'}
+          </span>
+
+          {dueDateInfo?.status === 'overdue' && !task.completed && (
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+              <AlertTriangle className="w-3 h-3 mr-1" />
+              Overdue
+            </span>
+          )}
+        </div>
       </div>
+
+      {/* Overdue Alert */}
+      {dueDateInfo?.status === 'overdue' && !task.completed && (
+        <div className="mt-3 p-2 bg-red-50 border border-red-200 rounded-md">
+          <div className="flex items-center gap-2 text-red-700 text-xs">
+            <AlertTriangle className="w-4 h-4" />
+            <span>
+              This task was due on {formatFullDate(task.dueDate!)}
+            </span>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

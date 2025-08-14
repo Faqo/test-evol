@@ -13,7 +13,6 @@ import {
 import { TasksService } from './tasks.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
-import { FilterTaskDto } from './dto/filter-task.dto';
 
 /**
  * @class TasksController
@@ -41,10 +40,8 @@ export class TasksController {
   }
 
   /**
-   * Obtiene todas las tareas con filtros opcionales
-   * @param {FilterTaskDto} filters - Filtros de estado y fechas
-   * @returns {Promise<Task[]>} Lista de tareas que cumplen los criterios
-   * @throws {BadRequestException} Si los filtros tienen formato incorrecto
+   * Obtiene todas las tareas
+   * @returns {Promise<Task[]>} Lista de tareas 
    * @example
    * GET /api/tasks
    * Body: { "completed": false, "dateFrom": "2024-01-01" }
@@ -52,8 +49,8 @@ export class TasksController {
 
   @Get()
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
-  findAll(@Body() filterDto?: FilterTaskDto) {
-    return this.tasksService.findAllWithFilters(filterDto);
+  findAll() {
+    return this.tasksService.findAll();
   }
 
   /**

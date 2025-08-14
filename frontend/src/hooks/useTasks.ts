@@ -1,15 +1,15 @@
-// src/hooks/useTasks.ts - SOLUCIÓN DEFINITIVA
+// src/hooks/useTasks.ts - PRODUCTION CLEAN VERSION
 import { useDispatch, useSelector } from 'react-redux';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState, useRef } from 'react';
 import type { AppDispatch, RootState } from '../store/store';
 import type { CreateTaskData, UpdateTaskData, TaskFilters } from '../types/task';
-import { 
-  fetchTasks, 
-  createTask, 
-  updateTask, 
-  deleteTask, 
-  setFilters, 
-  clearFilters 
+import {
+  fetchTasks,
+  createTask,
+  updateTask,
+  deleteTask,
+  setFilters,
+  clearFilters
 } from '../store/slices/taskSlice';
 
 // Variable global para controlar la carga inicial
@@ -18,57 +18,100 @@ let hasInitiallyLoaded = false;
 export const useTasks = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { tasks, loading, error, filters } = useSelector((state: RootState) => state.tasks);
-  
+
   // Estado para ordenamiento
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
-  // Cargar tareas del servidor
-  const loadTasks = useCallback(() => {
-    const serverFilters = {
-      completed: filters.completed,
-      dateFrom: filters.dateFrom,
-      dateTo: filters.dateTo,
-    };
-    dispatch(fetchTasks(serverFilters));
-  }, [dispatch, filters.completed, filters.dateFrom, filters.dateTo]);
+  // Referencias estables para optimización
+  const tasksRef = useRef(tasks);
+  tasksRef.current = tasks;
 
-  // Auto-cargar usando useMemo (se ejecuta solo cuando cambian las dependencias)
+  const filtersRef = useRef(filters);
+  filtersRef.current = filters;
+
+  const sortOrderRef = useRef(sortOrder);
+  sortOrderRef.current = sortOrder;
+
+  // Auto-cargar tareas inicial
   useMemo(() => {
     if (!hasInitiallyLoaded) {
-      console.log('🔵 Initial load with useMemo - ONCE ONLY');
       hasInitiallyLoaded = true;
       dispatch(fetchTasks({}));
     }
-  }, []); // ✅ Array vacío = solo se ejecuta una vez
+  }, [dispatch]);
 
-  // Tareas ordenadas localmente 
-  const sortedTasks = useMemo(() => {
+  // Dependencias primitivas para optimización
+  const completedFilter = filters.completed;
+  const dateFromTimestamp = filters.dateFrom?.getTime();
+  const dateToTimestamp = filters.dateTo?.getTime();
+  const tasksLength = tasks.length;
 
-    if (tasks.length === 0) {
-      console.log('🔄 No tasks to sort');
+  // Filtrado y ordenamiento optimizado
+  const sortedAndFilteredTasks = useMemo(() => {
+    if (tasksLength === 0) {
       return [];
     }
-    
-    const sorted = [...tasks].sort((a, b) => {
-      const dateA = new Date(a.createdAt);
-      const dateB = new Date(b.createdAt);
-      
-      if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) {
-        console.warn('Invalid date found in tasks:', { a: a.createdAt, b: b.createdAt });
+
+    let filteredTasks = [...tasks];
+
+    // Filtro por estado completado
+    if (completedFilter !== undefined) {
+      filteredTasks = filteredTasks.filter(task => task.completed === completedFilter);
+    }
+
+    // Filtro por fecha de vencimiento - desde
+    if (dateFromTimestamp) {
+      filteredTasks = filteredTasks.filter(task => {
+        if (!task.dueDate) return false;
+        const dueDateTimestamp = new Date(task.dueDate).getTime();
+        return dueDateTimestamp >= dateFromTimestamp;
+      });
+    }
+
+    // Filtro por fecha de vencimiento - hasta
+    if (dateToTimestamp) {
+      filteredTasks = filteredTasks.filter(task => {
+        if (!task.dueDate) return false;
+        const dueDateTimestamp = new Date(task.dueDate).getTime();
+        return dueDateTimestamp <= dateToTimestamp;
+      });
+    }
+
+    // Ordenamiento por fecha de vencimiento o creación
+    const sorted = filteredTasks.sort((a, b) => {
+      const getDateForSorting = (task: any) => {
+        return task.dueDate ? new Date(task.dueDate).getTime() : new Date(task.createdAt).getTime();
+      };
+
+      const timeA = getDateForSorting(a);
+      const timeB = getDateForSorting(b);
+
+      if (isNaN(timeA) || isNaN(timeB)) {
         return 0;
       }
-      
-      const timeA = dateA.getTime();
-      const timeB = dateB.getTime();
-      const result = sortOrder === 'desc' ? timeB - timeA : timeA - timeB;
-      
-      return result;
+
+      return sortOrder === 'desc' ? timeB - timeA : timeA - timeB;
     });
 
     return sorted;
-  }, [tasks, sortOrder]);
+  }, [
+    tasksLength,
+    sortOrder,
+    completedFilter,
+    dateFromTimestamp,
+    dateToTimestamp,
+    tasks
+  ]);
 
-  // Crear tarea
+  // Funciones de gestión de tareas
+  const loadTasks = useCallback(() => {
+    dispatch(fetchTasks(filtersRef.current));
+  }, [dispatch]);
+
+  const loadTasksWithFilters = useCallback((customFilters: any) => {
+    dispatch(fetchTasks(customFilters));
+  }, [dispatch]);
+
   const addTask = useCallback(async (taskData: CreateTaskData) => {
     try {
       await dispatch(createTask(taskData)).unwrap();
@@ -78,7 +121,6 @@ export const useTasks = () => {
     }
   }, [dispatch]);
 
-  // Actualizar tarea
   const editTask = useCallback(async (id: number, data: UpdateTaskData) => {
     try {
       await dispatch(updateTask({ id, data })).unwrap();
@@ -88,7 +130,6 @@ export const useTasks = () => {
     }
   }, [dispatch]);
 
-  // Eliminar tarea
   const removeTask = useCallback(async (id: number) => {
     try {
       await dispatch(deleteTask(id)).unwrap();
@@ -98,29 +139,52 @@ export const useTasks = () => {
     }
   }, [dispatch]);
 
-  // Actualizar filtros
   const updateFilters = useCallback((newFilters: TaskFilters) => {
     dispatch(setFilters(newFilters));
   }, [dispatch]);
 
-  // Limpiar filtros
   const resetFilters = useCallback(() => {
     dispatch(clearFilters());
     setSortOrder('desc');
   }, [dispatch]);
 
-  // ✅ Función para cambiar orden - CON DEBUG
   const updateSortOrder = useCallback((order: 'asc' | 'desc') => {
     setSortOrder(order);
-  }, [sortOrder]);
+  }, []);
+
+  // Métricas estadísticas
+  const stats = useMemo(() => {
+    const tasksWithDueDate = tasks.filter(t => t.dueDate);
+    const overdueTasks = tasks.filter(t =>
+      t.dueDate && new Date(t.dueDate) < new Date() && !t.completed
+    );
+
+    return {
+      total: tasksLength,
+      completed: tasks.filter(t => t.completed).length,
+      pending: tasks.filter(t => !t.completed).length,
+      filtered: sortedAndFilteredTasks.length,
+      withDueDate: tasksWithDueDate.length,
+      withoutDueDate: tasks.length - tasksWithDueDate.length,
+      overdue: overdueTasks.length,
+      hasActiveFilters: completedFilter !== undefined ||
+        !!dateFromTimestamp ||
+        !!dateToTimestamp ||
+        sortOrder !== 'desc'
+    };
+  }, [tasksLength, tasks, sortedAndFilteredTasks.length, completedFilter, dateFromTimestamp, dateToTimestamp, sortOrder]);
 
   return {
-    tasks: sortedTasks,
+    // Data
+    tasks: sortedAndFilteredTasks,
     rawTasks: tasks,
     loading,
     error,
     filters,
     sortOrder,
+    stats,
+
+    // Actions
     addTask,
     editTask,
     removeTask,
@@ -128,5 +192,9 @@ export const useTasks = () => {
     resetFilters,
     updateSortOrder,
     loadTasks,
+    loadTasksWithFilters,
+
+    // Helper data
+    tasksCount: sortedAndFilteredTasks.length
   };
 };

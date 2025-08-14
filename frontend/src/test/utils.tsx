@@ -34,7 +34,7 @@ export function renderWithProviders(
 ) {
   const { initialState, ...renderOptions } = options;
   const store = createTestStore(initialState);
-  
+
   function Wrapper({ children }: { children: React.ReactNode }) {
     return (
       <Provider store={store}>
@@ -55,7 +55,7 @@ export function renderAppWithProviders(
 ) {
   const { initialState, ...renderOptions } = options;
   const store = createTestStore(initialState);
-  
+
   function Wrapper({ children }: { children: React.ReactNode }) {
     return (
       <Provider store={store}>
@@ -74,9 +74,9 @@ export const mockTask = {
   description: 'Test Description',
   completed: false,
   tags: ['work'],
-  dueDate: '2024-12-31T23:59:59.000Z',
-  createdAt: '2024-01-01T00:00:00.000Z',
-  updatedAt: '2024-01-01T00:00:00.000Z',
+  dueDate: null,
+  createdAt: '2025-08-13T15:00:00Z',
+  updatedAt: '2025-08-13T15:00:00Z'
 };
 
 // Export todo de testing library
