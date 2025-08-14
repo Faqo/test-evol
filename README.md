@@ -157,6 +157,8 @@ npm run test:ui
 │   │   │       ├── TaskItem.tsx
 │   │   │       └── TaskList.tsx
 │   │   ├── hooks
+│   │   │   ├── __tests__
+│   │   │   │   └── useTasks.test.ts
 │   │   │   └── useTasks.ts
 │   │   ├── pages
 │   │   │   ├── NotFoundPage.tsx
@@ -211,7 +213,6 @@ npm run test:ui
 │   │   ├── tasks
 │   │   │   ├── dto
 │   │   │   │   ├── create-task.dto.ts
-│   │   │   │   ├── filter-task.dto.ts
 │   │   │   │   └── update-task.dto.ts
 │   │   │   ├── tasks.controller.spec.ts
 │   │   │   ├── tasks.controller.ts
